@@ -1,5 +1,6 @@
 import 'package:absensi_mobile/core/router.dart';
 import 'package:absensi_mobile/feature/home/presentation/screen/home.screen.dart';
+import 'package:absensi_mobile/feature/profile/presentation/screen/profile.screen.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -90,7 +91,7 @@ class _NavigationPageState extends State<NavigationPage>
 
                   Text("Riwayat Absensi"),
 
-                  Text("Profil Siswa"),
+                  ProfileScreen(),
                 ],
               ),
 

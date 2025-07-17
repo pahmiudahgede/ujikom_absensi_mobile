@@ -2,6 +2,7 @@ import 'package:absensi_mobile/core/utils/navigation.dart';
 import 'package:absensi_mobile/feature/auth/presentation/screen/login.screen.dart';
 import 'package:absensi_mobile/feature/launch/splash.screen.dart';
 import 'package:absensi_mobile/feature/home/presentation/screen/home.screen.dart';
+import 'package:absensi_mobile/feature/profile/presentation/screen/profile.screen.dart';
 import 'package:go_router/go_router.dart';
 
 final router = GoRouter(
@@ -16,5 +17,6 @@ final router = GoRouter(
     ),
     GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
     GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
+    GoRoute(path: '/profile', builder: (context, state) => const ProfileScreen()),
   ],
 );

@@ -322,7 +322,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       backgroundColor: const Color(0xFF0D47A1),
       foregroundColor: Colors.white,
       elevation: 0,
-      centerTitle: true,
       title: const Text(
         'UJIKOM Absensi',
         style: TextStyle(
@@ -336,11 +335,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           icon: const Icon(Iconsax.notification),
           onPressed: () {},
           tooltip: 'Notifikasi',
-        ),
-        IconButton(
-          icon: const Icon(Iconsax.profile_circle),
-          onPressed: () {},
-          tooltip: 'Profil',
         ),
         const SizedBox(width: 8),
       ],
