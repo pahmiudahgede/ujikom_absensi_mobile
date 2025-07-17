@@ -56,7 +56,7 @@ class _NavigationPageState extends State<NavigationPage>
 
   void _onItemTapped(int index) {
     if (index == 2) {
-      router.push("/absensi");
+      router.push("/absenmapzone");
     } else {
       setState(() => _selectedIndex = index);
       _saveSelectedIndex(index);
@@ -64,7 +64,7 @@ class _NavigationPageState extends State<NavigationPage>
   }
 
   void _onCenterButtonTapped() {
-    router.push("/absensi");
+    router.push("/absenmapzone");
   }
 
   @override
@@ -87,8 +87,7 @@ class _NavigationPageState extends State<NavigationPage>
                   HomeScreen(),
 
                   Text("Jadwal Pelajaran"),
-                  Text(""),
-
+                  Text("mapzoneabsesni"),
                   Text("Riwayat Absensi"),
 
                   ProfileScreen(),
