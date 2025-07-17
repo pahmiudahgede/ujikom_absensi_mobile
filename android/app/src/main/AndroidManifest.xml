@@ -6,9 +6,9 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:label="absensi_mobile"
+        android:label="Ujikom"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/launcher_icon">
         
         <!-- Google Maps API Key - letakkan di level application -->
         <meta-data 

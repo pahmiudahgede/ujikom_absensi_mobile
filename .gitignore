@@ -50,3 +50,6 @@ app.*.map.json
 # env
 .env.dev
 .env.prod
+
+# file restrict
+assets/launcher
