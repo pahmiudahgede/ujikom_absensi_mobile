@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'dart:async';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -9,22 +11,19 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
-  late AnimationController _fadeController;
-  late Animation<double> _fadeAnimation;
-  
-  // Sample data - nanti bisa diganti dengan data dari API
+  late Timer _timer;
+  String _currentTime = "";
+  String _currentDate = "";
+
   final String studentName = "Ahmad Rizky Pratama";
   final String studentClass = "XII RPL 1";
   final String studentNisn = "1234567890";
-  final String todayDate = "Kamis, 17 Juli 2025";
-  
-  // Status absensi hari ini
+
   bool isCheckedIn = false;
   bool isCheckedOut = false;
   String checkInTime = "";
   String checkOutTime = "";
-  
-  // Statistics
+
   final int presentDays = 45;
   final int absentDays = 2;
   final int lateDays = 3;
@@ -33,32 +32,56 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _initializeAnimations();
+    _updateTime();
+    _startTimer();
     _loadTodayAttendance();
   }
 
-  void _initializeAnimations() {
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-    
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeInOut,
-    ));
-    
-    _fadeController.forward();
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _updateTime();
+    });
+  }
+
+  void _updateTime() {
+    final now = DateTime.now();
+    setState(() {
+      _currentTime =
+          "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}";
+      _currentDate = _formatDate(now);
+    });
+  }
+
+  String _formatDate(DateTime date) {
+    const days = [
+      'Minggu',
+      'Senin',
+      'Selasa',
+      'Rabu',
+      'Kamis',
+      'Jumat',
+      'Sabtu',
+    ];
+    const months = [
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember',
+    ];
+
+    return "${days[date.weekday % 7]}, ${date.day} ${months[date.month - 1]} ${date.year}";
   }
 
   void _loadTodayAttendance() {
-    // Simulasi load data absensi hari ini
-    // Nanti bisa diganti dengan API call
     setState(() {
-      // Contoh data
       isCheckedIn = false;
       isCheckedOut = false;
     });
@@ -66,41 +89,53 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    _fadeController.dispose();
+    _timer.cancel();
     super.dispose();
   }
 
   void _handleCheckIn() async {
     try {
-      // Simulasi proses check in
       setState(() {
         isCheckedIn = true;
         checkInTime = _getCurrentTime();
       });
-      
-      // Haptic feedback
+
       HapticFeedback.lightImpact();
-      
-      _showSuccessDialog('Check In Berhasil', 'Anda berhasil melakukan check in pada $checkInTime');
+
+      _showSuccessDialog(
+        'Check In Berhasil',
+        'Anda berhasil melakukan check in pada $checkInTime',
+        Iconsax.login,
+        const Color(0xFF4CAF50),
+      );
     } catch (e) {
-      _showErrorDialog('Check In Gagal', 'Terjadi kesalahan saat melakukan check in');
+      _showErrorDialog(
+        'Check In Gagal',
+        'Terjadi kesalahan saat melakukan check in',
+      );
     }
   }
 
   void _handleCheckOut() async {
     try {
-      // Simulasi proses check out
       setState(() {
         isCheckedOut = true;
         checkOutTime = _getCurrentTime();
       });
-      
-      // Haptic feedback
+
       HapticFeedback.lightImpact();
-      
-      _showSuccessDialog('Check Out Berhasil', 'Anda berhasil melakukan check out pada $checkOutTime');
+
+      _showSuccessDialog(
+        'Check Out Berhasil',
+        'Anda berhasil melakukan check out pada $checkOutTime',
+        Iconsax.logout,
+        const Color(0xFFFF9800),
+      );
     } catch (e) {
-      _showErrorDialog('Check Out Gagal', 'Terjadi kesalahan saat melakukan check out');
+      _showErrorDialog(
+        'Check Out Gagal',
+        'Terjadi kesalahan saat melakukan check out',
+      );
     }
   }
 
@@ -109,202 +144,367 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}";
   }
 
-  void _showSuccessDialog(String title, String message) {
+  void _showSuccessDialog(
+    String title,
+    String message,
+    IconData icon,
+    Color color,
+  ) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            const Icon(Icons.check_circle, color: Colors.green),
-            const SizedBox(width: 8),
-            Text(title),
-          ],
-        ),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+      barrierDismissible: false,
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, color: color, size: 32),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1976D2),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+            content: Text(
+              message,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[700],
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            actions: [
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: color,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: const Text(
+                    'OK',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
   void _showErrorDialog(String title, String message) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            const Icon(Icons.error, color: Colors.red),
-            const SizedBox(width: 8),
-            Text(title),
-          ],
-        ),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+      barrierDismissible: false,
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Iconsax.warning_2,
+                    color: Colors.red,
+                    size: 32,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+            content: Text(
+              message,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[700],
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            actions: [
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: const Text(
+                    'OK',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: _buildAppBar(),
-      body: FadeTransition(
-        opacity: _fadeAnimation,
-        child: RefreshIndicator(
-          onRefresh: () async {
-            _loadTodayAttendance();
-            await Future.delayed(const Duration(seconds: 1));
-          },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildWelcomeCard(),
-                const SizedBox(height: 20),
-                _buildAttendanceCard(),
-                const SizedBox(height: 20),
-                _buildQuickActions(),
-                const SizedBox(height: 20),
-                _buildStatisticsCard(),
-                const SizedBox(height: 20),
-                _buildRecentActivity(),
-                const SizedBox(height: 80), // Space for bottom padding
-              ],
-            ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          _loadTodayAttendance();
+          await Future.delayed(const Duration(seconds: 1));
+        },
+        color: const Color(0xFF1976D2),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildDigitalClock(),
+              const SizedBox(height: 24),
+              _buildWelcomeCard(),
+              const SizedBox(height: 24),
+              _buildAttendanceCard(),
+              const SizedBox(height: 24),
+              _buildQuickActions(),
+              const SizedBox(height: 24),
+              _buildStatisticsCard(),
+              const SizedBox(height: 24),
+              _buildRecentActivity(),
+              const SizedBox(height: 100),
+            ],
           ),
         ),
       ),
-      // bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      backgroundColor: const Color(0xFF1976D2),
+      backgroundColor: const Color(0xFF0D47A1),
       foregroundColor: Colors.white,
       elevation: 0,
+      centerTitle: true,
       title: const Text(
         'UJIKOM Absensi',
         style: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 20,
+          letterSpacing: 0.5,
         ),
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.notifications_outlined),
-          onPressed: () {
-            // TODO: Implement notifications
-          },
+          icon: const Icon(Iconsax.notification),
+          onPressed: () {},
+          tooltip: 'Notifikasi',
         ),
         IconButton(
-          icon: const Icon(Icons.account_circle_outlined),
-          onPressed: () {
-            // TODO: Implement profile
-          },
+          icon: const Icon(Iconsax.profile_circle),
+          onPressed: () {},
+          tooltip: 'Profil',
         ),
+        const SizedBox(width: 8),
       ],
+    );
+  }
+
+  Widget _buildDigitalClock() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(
+        horizontal: MediaQuery.of(context).size.width * 0.05,
+        vertical: 24,
+      ),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF0D47A1), Color(0xFF1976D2)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1976D2).withValues(alpha: 0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Digital Clock
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              _currentTime,
+              style: TextStyle(
+                fontSize: MediaQuery.of(context).size.width * 0.15,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                letterSpacing: 2,
+                fontFamily: 'monospace',
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // Date
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+            ),
+            child: Text(
+              _currentDate,
+              style: TextStyle(
+                fontSize: MediaQuery.of(context).size.width * 0.04,
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Status Indicator
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: isCheckedIn ? Colors.green : Colors.red,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                isCheckedIn ? 'Sudah Absen Masuk' : 'Belum Absen Masuk',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: isCheckedOut ? Colors.orange : Colors.grey,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                isCheckedOut ? 'Sudah Absen Keluar' : 'Belum Absen Keluar',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildWelcomeCard() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF1976D2), Color(0xFF1565C0)],
-        ),
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.blue.withValues(alpha: 0.3),
-            blurRadius: 10,
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 20,
             offset: const Offset(0, 5),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 30,
-                backgroundColor: Colors.white.withValues(alpha: 0.2),
-                child: const Icon(
-                  Icons.person,
-                  size: 30,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Selamat Datang,',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                      ),
-                    ),
-                    Text(
-                      studentName,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      '$studentClass • $studentNisn',
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(8),
+              color: const Color(0xFF1976D2).withValues(alpha: 0.1),
+              shape: BoxShape.circle,
             ),
-            child: Row(
+            child: const Icon(Iconsax.user, size: 32, color: Color(0xFF1976D2)),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(
-                  Icons.calendar_today,
-                  color: Colors.white,
-                  size: 16,
-                ),
-                const SizedBox(width: 8),
                 Text(
-                  todayDate,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  'Selamat Datang,',
+                  style: TextStyle(
+                    color: Colors.grey[600],
                     fontSize: 14,
+                    fontWeight: FontWeight.w500,
                   ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  studentName,
+                  style: const TextStyle(
+                    color: Color(0xFF1976D2),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '$studentClass • $studentNisn',
+                  style: TextStyle(color: Colors.grey[500], fontSize: 12),
                 ),
               ],
             ),
@@ -317,51 +517,68 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildAttendanceCard() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Absensi Hari Ini',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1976D2),
-            ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1976D2).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Iconsax.clock,
+                  color: Color(0xFF1976D2),
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Absensi Hari Ini',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1976D2),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           Row(
             children: [
               Expanded(
                 child: _buildAttendanceButton(
                   'Check In',
-                  Icons.login,
+                  Iconsax.login,
                   isCheckedIn,
                   checkInTime,
                   _handleCheckIn,
-                  Colors.green,
+                  const Color(0xFF4CAF50),
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: _buildAttendanceButton(
                   'Check Out',
-                  Icons.logout,
+                  Iconsax.logout,
                   isCheckedOut,
                   checkOutTime,
                   _handleCheckOut,
-                  Colors.orange,
+                  const Color(0xFFFF9800),
                 ),
               ),
             ],
@@ -380,12 +597,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     Color color,
   ) {
     return Container(
-      height: 120,
+      height: 130,
       decoration: BoxDecoration(
-        color: isCompleted ? color.withValues(alpha: 0.1) : Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
+        color:
+            isCompleted
+                ? color.withValues(alpha: 0.1)
+                : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isCompleted ? color : Colors.grey[300]!,
+          color: isCompleted ? color : Colors.grey.withValues(alpha: 0.2),
           width: 2,
         ),
       ),
@@ -393,18 +613,28 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         color: Colors.transparent,
         child: InkWell(
           onTap: isCompleted ? null : onPressed,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  isCompleted ? Icons.check_circle : icon,
-                  size: 32,
-                  color: isCompleted ? color : Colors.grey[600],
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color:
+                        isCompleted
+                            ? color.withValues(alpha: 0.2)
+                            : Colors.grey.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    isCompleted ? Iconsax.tick_circle : icon,
+                    size: 28,
+                    color: isCompleted ? color : Colors.grey[600],
+                  ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Text(
                   label,
                   style: TextStyle(
@@ -420,6 +650,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     style: TextStyle(
                       fontSize: 12,
                       color: color,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
@@ -435,47 +666,58 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Aksi Cepat',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF1976D2),
-          ),
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1976D2).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Iconsax.flash_1,
+                color: Color(0xFF1976D2),
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'Aksi Cepat',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1976D2),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
         Row(
           children: [
             Expanded(
               child: _buildQuickActionItem(
-                'Riwayat Absensi',
-                Icons.history,
-                Colors.purple,
-                () {
-                  // TODO: Navigate to history
-                },
+                'Riwayat',
+                Iconsax.document_text,
+                const Color(0xFF9C27B0),
+                () {},
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 16),
             Expanded(
               child: _buildQuickActionItem(
                 'Izin/Sakit',
-                Icons.medical_services,
-                Colors.red,
-                () {
-                  // TODO: Navigate to permission
-                },
+                Iconsax.heart,
+                const Color(0xFFE91E63),
+                () {},
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 16),
             Expanded(
               child: _buildQuickActionItem(
                 'Jadwal',
-                Icons.schedule,
-                Colors.teal,
-                () {
-                  // TODO: Navigate to schedule
-                },
+                Iconsax.calendar,
+                const Color(0xFF00BCD4),
+                () {},
               ),
             ),
           ],
@@ -491,14 +733,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     VoidCallback onTap,
   ) {
     return Container(
-      height: 100,
+      height: 110,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
-            blurRadius: 8,
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
             offset: const Offset(0, 2),
           ),
         ],
@@ -507,18 +749,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  icon,
-                  size: 28,
-                  color: color,
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, size: 24, color: color),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Text(
                   label,
                   style: TextStyle(
@@ -527,6 +772,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     color: Colors.grey[700],
                   ),
                   textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -539,70 +786,118 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildStatisticsCard() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Statistik Kehadiran',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1976D2),
-            ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1976D2).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Iconsax.chart_1,
+                  color: Color(0xFF1976D2),
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Statistik Kehadiran',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1976D2),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           Row(
             children: [
               Expanded(
                 child: _buildStatItem(
                   'Hadir',
                   presentDays.toString(),
-                  Colors.green,
-                  Icons.check_circle,
+                  const Color(0xFF4CAF50),
+                  Iconsax.tick_circle,
                 ),
               ),
               Expanded(
                 child: _buildStatItem(
                   'Tidak Hadir',
                   absentDays.toString(),
-                  Colors.red,
-                  Icons.cancel,
+                  const Color(0xFFE91E63),
+                  Iconsax.close_circle,
                 ),
               ),
               Expanded(
                 child: _buildStatItem(
                   'Terlambat',
                   lateDays.toString(),
-                  Colors.orange,
-                  Icons.access_time,
+                  const Color(0xFFFF9800),
+                  Iconsax.timer_1,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          LinearProgressIndicator(
-            value: presentDays / totalDays,
-            backgroundColor: Colors.grey[300],
-            valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Tingkat Kehadiran: ${((presentDays / totalDays) * 100).toStringAsFixed(1)}%',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[600],
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Tingkat Kehadiran',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                    Text(
+                      '${((presentDays / totalDays) * 100).toStringAsFixed(1)}%',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF4CAF50),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: LinearProgressIndicator(
+                    value: presentDays / totalDays,
+                    backgroundColor: Colors.grey[300],
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      Color(0xFF4CAF50),
+                    ),
+                    minHeight: 8,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -610,28 +905,38 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildStatItem(String label, String value, Color color, IconData icon) {
+  Widget _buildStatItem(
+    String label,
+    String value,
+    Color color,
+    IconData icon,
+  ) {
     return Column(
       children: [
-        Icon(
-          icon,
-          size: 24,
-          color: color,
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, size: 24, color: color),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Text(
           value,
           style: TextStyle(
-            fontSize: 20,
+            fontSize: 24,
             fontWeight: FontWeight.bold,
             color: color,
           ),
         ),
+        const SizedBox(height: 4),
         Text(
           label,
           style: TextStyle(
             fontSize: 12,
             color: Colors.grey[600],
+            fontWeight: FontWeight.w500,
           ),
           textAlign: TextAlign.center,
         ),
@@ -642,47 +947,64 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildRecentActivity() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Aktivitas Terkini',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1976D2),
-            ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1976D2).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Iconsax.activity,
+                  color: Color(0xFF1976D2),
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Aktivitas Terkini',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1976D2),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           _buildActivityItem(
             'Check In',
             'Kemarin - 07:45',
-            Icons.login,
-            Colors.green,
+            Iconsax.login,
+            const Color(0xFF4CAF50),
           ),
           _buildActivityItem(
             'Check Out',
             'Kemarin - 15:30',
-            Icons.logout,
-            Colors.orange,
+            Iconsax.logout,
+            const Color(0xFFFF9800),
           ),
           _buildActivityItem(
             'Izin Sakit',
             '2 hari yang lalu',
-            Icons.medical_services,
-            Colors.red,
+            Iconsax.heart,
+            const Color(0xFFE91E63),
           ),
         ],
       ),
@@ -695,8 +1017,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     IconData icon,
     Color color,
   ) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+      ),
       child: Row(
         children: [
           Container(
@@ -705,13 +1033,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              icon,
-              size: 20,
-              color: color,
-            ),
+            child: Icon(icon, size: 20, color: color),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -721,14 +1045,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
+                    color: Color(0xFF1976D2),
                   ),
                 ),
+                const SizedBox(height: 4),
                 Text(
                   time,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
               ],
             ),
@@ -737,45 +1060,4 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
     );
   }
-
-  // Widget _buildBottomNavigationBar() {
-  //   return Container(
-  //     decoration: BoxDecoration(
-  //       boxShadow: [
-  //         BoxShadow(
-  //           color: Colors.grey.withValues(alpha: 0.3),
-  //           blurRadius: 10,
-  //           offset: const Offset(0, -2),
-  //         ),
-  //       ],
-  //     ),
-  //     child: BottomNavigationBar(
-  //       type: BottomNavigationBarType.fixed,
-  //       currentIndex: 0,
-  //       selectedItemColor: const Color(0xFF1976D2),
-  //       unselectedItemColor: Colors.grey,
-  //       items: const [
-  //         BottomNavigationBarItem(
-  //           icon: Icon(Icons.home),
-  //           label: 'Beranda',
-  //         ),
-  //         BottomNavigationBarItem(
-  //           icon: Icon(Icons.history),
-  //           label: 'Riwayat',
-  //         ),
-  //         BottomNavigationBarItem(
-  //           icon: Icon(Icons.schedule),
-  //           label: 'Jadwal',
-  //         ),
-  //         BottomNavigationBarItem(
-  //           icon: Icon(Icons.person),
-  //           label: 'Profil',
-  //         ),
-  //       ],
-  //       onTap: (index) {
-  //         // TODO: Handle navigation
-  //       },
-  //     ),
-  //   );
-  // }
 }

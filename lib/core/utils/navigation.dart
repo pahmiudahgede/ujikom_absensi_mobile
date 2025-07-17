@@ -22,7 +22,7 @@ class _NavigationPageState extends State<NavigationPage>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 500),
       vsync: this,
     );
 
@@ -126,7 +126,7 @@ class _NavigationPageState extends State<NavigationPage>
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha:0.2),
+                                  color: Colors.black.withValues(alpha: 0.2),
                                   blurRadius: 8,
                                   offset: const Offset(0, 4),
                                 ),
@@ -217,14 +217,18 @@ class _NavigationPageState extends State<NavigationPage>
                 icon,
                 size: isSelected ? 26 : 24,
                 color:
-                    isSelected ? Colors.white : Colors.white.withValues(alpha:0.6),
+                    isSelected
+                        ? Colors.white
+                        : Colors.white.withValues(alpha: 0.6),
               ),
               const SizedBox(height: 3),
               Text(
                 label,
                 style: TextStyle(
                   color:
-                      isSelected ? Colors.white : Colors.white.withValues(alpha:0.6),
+                      isSelected
+                          ? Colors.white
+                          : Colors.white.withValues(alpha: 0.6),
                   fontSize: isSelected ? 14 : 12,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                 ),
@@ -342,7 +346,7 @@ class _SimpleNavigationPageState extends State<SimpleNavigationPage> {
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha:0.2),
+                              color: Colors.black.withValues(alpha: 0.2),
                               blurRadius: 6,
                               offset: const Offset(0, 3),
                             ),
@@ -401,14 +405,19 @@ class _SimpleNavigationPageState extends State<SimpleNavigationPage> {
             Icon(
               icon,
               size: isSelected ? 22 : 18,
-              color: isSelected ? Colors.white : Colors.white.withValues(alpha:0.6),
+              color:
+                  isSelected
+                      ? Colors.white
+                      : Colors.white.withValues(alpha: 0.6),
             ),
             const SizedBox(height: 2),
             Text(
               label,
               style: TextStyle(
                 color:
-                    isSelected ? Colors.white : Colors.white.withValues(alpha:0.6),
+                    isSelected
+                        ? Colors.white
+                        : Colors.white.withValues(alpha: 0.6),
                 fontSize: 9,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               ),
