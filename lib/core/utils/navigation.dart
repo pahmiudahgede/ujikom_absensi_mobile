@@ -1,6 +1,8 @@
 import 'package:absensi_mobile/core/router.dart';
 import 'package:absensi_mobile/feature/home/presentation/screen/home.screen.dart';
+import 'package:absensi_mobile/feature/jadwal/presentation/screen/jadwal.screen.dart';
 import 'package:absensi_mobile/feature/profile/presentation/screen/profile.screen.dart';
+import 'package:absensi_mobile/feature/riwayat/presentation/screen/riwayat.screen.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -86,9 +88,10 @@ class _NavigationPageState extends State<NavigationPage>
                 children: const [
                   HomeScreen(),
 
-                  Text("Jadwal Pelajaran"),
+                  JadwalScreen(),
                   Text("mapzoneabsesni"),
-                  Text("Riwayat Absensi"),
+                  // Text("Riwayat Absensi"),
+                  RiwayatAbsenScreen(),
 
                   ProfileScreen(),
                 ],

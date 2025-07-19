@@ -365,7 +365,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
       child: Column(
         children: [
-          // Digital Clock
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
@@ -381,7 +380,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
           const SizedBox(height: 8),
 
-          // Date
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
@@ -402,7 +400,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
           const SizedBox(height: 16),
 
-          // Status Indicator
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
